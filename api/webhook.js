@@ -1,7 +1,9 @@
+import { getRedis } from './_redis.js';
+
 // POST /api/webhook — Gallabox → this endpoint
 // Optional envs:
 //   WEBHOOK_SHARED_SECRET — if set, requests must send x-shared-secret header matching
-//   KV_REST_API_URL + KV_REST_API_TOKEN — if present, events are queued in Vercel KV
+//   UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN — if present, events are queued
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,13 +27,13 @@ export default async function handler(req, res) {
 
   console.log('[gallabox]', JSON.stringify(record));
 
-  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+  const redis = getRedis();
+  if (redis) {
     try {
-      const { kv } = await import('@vercel/kv');
-      await kv.lpush('gallabox:events', JSON.stringify(record));
-      await kv.ltrim('gallabox:events', 0, 499);
+      await redis.lpush('gallabox:events', JSON.stringify(record));
+      await redis.ltrim('gallabox:events', 0, 499);
     } catch (err) {
-      console.warn('[gallabox] kv push failed:', err.message);
+      console.warn('[gallabox] redis push failed:', err.message);
     }
   }
 
