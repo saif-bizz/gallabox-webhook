@@ -1,0 +1,35 @@
+name: Poll Gallabox
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes, 24/7
+  workflow_dispatch: {}     # manual trigger from the Actions tab
+
+concurrency:
+  group: poll-gallabox
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Run poller
+        env:
+          GALLABOX_API_KEY: ${{ secrets.GALLABOX_API_KEY }}
+          GALLABOX_API_SECRET: ${{ secrets.GALLABOX_API_SECRET }}
+          GALLABOX_ACCOUNT_ID: ${{ secrets.GALLABOX_ACCOUNT_ID }}
+          GALLABOX_CHANNEL_ID: ${{ secrets.GALLABOX_CHANNEL_ID }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SHARED_SECRET: ${{ secrets.WEBHOOK_SHARED_SECRET }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: node scripts/poll-gallabox.js
