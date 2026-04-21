@@ -1,0 +1,10 @@
+{
+  "name": "gallabox-webhook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gallabox WhatsApp webhook receiver for Tanseeq digital sales (AGC + other brands)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}
